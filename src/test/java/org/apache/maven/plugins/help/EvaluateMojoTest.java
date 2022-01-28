@@ -28,19 +28,17 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.monitor.logging.DefaultLog;
-import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.settings.Settings;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.components.interactivity.InputHandler;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.LoggerManager;
 
 /**
  * Test class for the evaluate mojo of the Help Plugin.
@@ -49,15 +47,35 @@ public class EvaluateMojoTest
     extends AbstractMojoTestCase
 {
 
-    private InterceptingLog interceptingLogger;
+    private boolean isInfoEnabled;
+
+    private List<String> infoLogs = new ArrayList<>();
+
+    private List<String> warnLogs = new ArrayList<>();
+
+    private Log interceptingLogger;
 
     @Override
     protected void setUp()
         throws Exception
     {
         super.setUp();
-        interceptingLogger =
-            new InterceptingLog( getContainer().lookup( LoggerManager.class ).getLoggerForComponent( Mojo.ROLE ) );
+        interceptingLogger = (Log) Proxy.newProxyInstance(
+                getClass().getClassLoader(),
+                new Class[] { Log.class },
+                ( proxy, method, args ) ->
+                {
+                    if ( method.getName().equals( "info" ) )
+                    {
+                        infoLogs.add( args[0].toString() );
+                    }
+                    else if ( method.getName().equals( "warn" ) )
+                    {
+                        warnLogs.add( args[0].toString() );
+                    }
+                    return null;
+                }
+        );
     }
 
     /**
@@ -83,8 +101,8 @@ public class EvaluateMojoTest
         
         String ls = System.getProperty( "line.separator" );
 
-        assertTrue( interceptingLogger.infoLogs.contains( ls + "My result" ) );
-        assertTrue( interceptingLogger.warnLogs.isEmpty() );
+        assertTrue( infoLogs.contains( ls + "My result" ) );
+        assertTrue( warnLogs.isEmpty() );
         verify( expressionEvaluator ).evaluate( "${project.groupId}" );
         verify( inputHandler, times( 2 ) ).readLine();
     }
@@ -112,8 +130,8 @@ public class EvaluateMojoTest
         
         String ls = System.getProperty( "line.separator" );
 
-        assertTrue( interceptingLogger.infoLogs.contains( ls + "My result" ) );
-        assertFalse( interceptingLogger.warnLogs.isEmpty() );
+        assertTrue( infoLogs.contains( ls + "My result" ) );
+        assertFalse( warnLogs.isEmpty() );
         verify( expressionEvaluator ).evaluate( "${project.artifactId}" );
         verify( inputHandler, times( 2 ) ).readLine();
     }
@@ -136,7 +154,7 @@ public class EvaluateMojoTest
         when( expressionEvaluator.evaluate( anyString() ) ).thenReturn( "org.apache.maven.its.help" );
 
         // Quiet mode given on command line.(simulation)
-        interceptingLogger.setInfoEnabled( false );
+        isInfoEnabled = false;
 
         setUpMojo( mojo, null, expressionEvaluator );
 
@@ -156,7 +174,7 @@ public class EvaluateMojoTest
 
         String stdResult = baos.toString();
         assertEquals( "org.apache.maven.its.help", stdResult );
-        assertTrue( interceptingLogger.warnLogs.isEmpty() );
+        assertTrue( warnLogs.isEmpty() );
     }
 
     private void setUpMojo( EvaluateMojo mojo, InputHandler inputHandler, ExpressionEvaluator expressionEvaluator )
@@ -167,49 +185,6 @@ public class EvaluateMojoTest
         setVariableValueToObject( mojo, "settings", new Settings() );
         setVariableValueToObject( mojo, "project", new MavenProjectStub() );
         setVariableValueToObject( mojo, "evaluator", expressionEvaluator );
-    }
-
-    private static final class InterceptingLog
-        extends DefaultLog
-    {
-        private boolean isInfoEnabled;
-
-        final List<String> infoLogs = new ArrayList<>();
-
-        final List<String> warnLogs = new ArrayList<>();
-
-        public InterceptingLog( Logger logger )
-        {
-            super( logger );
-            this.isInfoEnabled = true;
-        }
-
-        public void setInfoEnabled( boolean isInfoEnabled )
-        {
-            this.isInfoEnabled = isInfoEnabled;
-        }
-
-        public boolean isInfoEnabled()
-        {
-            return isInfoEnabled;
-        }
-
-        @Override
-        public void info( CharSequence content )
-        {
-            if ( this.isInfoEnabled )
-            {
-                super.info( content );
-                infoLogs.add( content.toString() );
-            }
-        }
-
-        @Override
-        public void warn( CharSequence content )
-        {
-            super.warn( content );
-            warnLogs.add( content.toString() );
-        }
     }
 
 }

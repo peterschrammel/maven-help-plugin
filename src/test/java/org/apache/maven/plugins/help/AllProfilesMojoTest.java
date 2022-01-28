@@ -22,19 +22,17 @@ package org.apache.maven.plugins.help;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.model.Profile;
-import org.apache.maven.monitor.logging.DefaultLog;
-import org.apache.maven.plugin.Mojo;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.logging.Logger;
-import org.codehaus.plexus.logging.LoggerManager;
 import org.codehaus.plexus.util.IOUtil;
 
 /**
@@ -44,15 +42,26 @@ public class AllProfilesMojoTest
     extends AbstractMojoTestCase
 {
 
-    private InterceptingLog interceptingLogger;
+    private List<String> warnLogs = new ArrayList<>();
+    private Log interceptingLogger;
 
     @Override
     protected void setUp()
         throws Exception
     {
         super.setUp();
-        interceptingLogger =
-            new InterceptingLog( getContainer().lookup( LoggerManager.class ).getLoggerForComponent( Mojo.ROLE ) );
+        interceptingLogger = (Log) Proxy.newProxyInstance(
+                getClass().getClassLoader(),
+                new Class[] { Log.class },
+                ( proxy, method, args ) ->
+                {
+                    if ( method.getName().equals( "warn" ) )
+                    {
+                        warnLogs.add( args[0].toString() );
+                    }
+                    return null;
+                }
+        );
     }
 
     /**
@@ -72,7 +81,7 @@ public class AllProfilesMojoTest
 
         mojo.execute();
 
-        assertTrue( interceptingLogger.warnLogs.contains( "No profiles detected!" ) );
+        assertTrue( warnLogs.contains( "No profiles detected!" ) );
     }
     
     /**
@@ -193,22 +202,4 @@ public class AllProfilesMojoTest
         }
     }
     
-    private static final class InterceptingLog
-        extends DefaultLog
-    {
-        final List<String> warnLogs = new ArrayList<>();
-
-        public InterceptingLog( Logger logger )
-        {
-            super( logger );
-        }
-
-        @Override
-        public void warn( CharSequence content )
-        {
-            super.warn( content );
-            warnLogs.add( content.toString() );
-        }
-    }
-
 }
