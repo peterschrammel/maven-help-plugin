@@ -69,8 +69,8 @@
 
   <properties>
     <javaVersion>7</javaVersion>
-    <mavenVersion>3.1.1</mavenVersion>
-    <mavenPluginToolsVersion>3.6.2</mavenPluginToolsVersion>
+    <mavenVersion>3.6.1</mavenVersion>
+    <mavenPluginToolsVersion>3.6.4</mavenPluginToolsVersion>
     <surefire.version>2.22.2</surefire.version>
     <project.build.outputTimestamp>2020-04-07T21:04:00Z</project.build.outputTimestamp>
   </properties>
@@ -81,26 +81,37 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-artifact</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
-      <version>3.8.4</version>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-settings</artifactId>
       <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings-builder</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- maven plugin tools -->
@@ -191,7 +202,7 @@
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-harness</artifactId>
-      <version>3.1.0</version>
+      <version>3.3.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -226,10 +237,6 @@
           <version>3.1.2</version>
         </plugin>
         <plugin>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.0.0-M3</version>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.3.1</version>
@@ -262,51 +269,6 @@
                 </enforceBytecodeVersion>
               </rules>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- unpack old Maven core sources for maven.mdo model to be able to generate xpp3-extended-writer when not yet provided by Maven core -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.apache.maven</groupId>
-                  <artifactId>apache-maven</artifactId>
-                  <version>${mavenVersion}</version>
-                  <type>tar.gz</type>
-                  <classifier>src</classifier>
-                  <outputDirectory>${project.build.directory}</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.modello</groupId>
-        <artifactId>modello-maven-plugin</artifactId>
-        <version>1.11</version>
-        <configuration>
-          <version>4.0.0</version>
-          <models>
-            <model>target/apache-maven-${mavenVersion}/maven-model/src/main/mdo/maven.mdo</model>
-          </models>
-          <extendedClassnameSuffix>ExOldSupport</extendedClassnameSuffix><!-- to avoid conflict with class provided by Maven core -->
-        </configuration>
-        <executions>
-          <execution>
-            <id>modello</id>
-            <goals>
-              <goal>xpp3-extended-writer</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
