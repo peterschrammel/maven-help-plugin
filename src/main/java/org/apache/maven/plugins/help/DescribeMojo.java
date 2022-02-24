@@ -423,7 +423,7 @@ public class DescribeMojo
      * @throws MojoExecutionException if any
      */
     private void describePlugin( PluginDescriptor pd, StringBuilder buffer )
-        throws MojoFailureException, MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         append( buffer, pd.getId(), 0 );
         buffer.append( LS );
@@ -498,7 +498,7 @@ public class DescribeMojo
      * @throws MojoExecutionException if any
      */
     private void describeMojo( MojoDescriptor md, StringBuilder buffer )
-        throws MojoFailureException, MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         buffer.append( "Mojo: '" ).append( md.getFullGoalName() ).append( "'" );
         buffer.append( LS );
@@ -523,7 +523,7 @@ public class DescribeMojo
      * @throws MojoExecutionException if any
      */
     private void describeMojoGuts( MojoDescriptor md, StringBuilder buffer, boolean fullDescription )
-        throws MojoFailureException, MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         append( buffer, MessageUtils.buffer().strong( md.getFullGoalName() ).toString(), 0 );
 
@@ -600,7 +600,7 @@ public class DescribeMojo
      * @throws MojoExecutionException if any
      */
     private void describeMojoParameters( MojoDescriptor md, StringBuilder buffer )
-        throws MojoFailureException, MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         List<Parameter> params = md.getParameters();
 
@@ -816,7 +816,7 @@ public class DescribeMojo
      * @see HelpMojo#toLines(String, int, int, int)
      */
     private static List<String> toLines( String text, int indent, int indentSize, int lineLength )
-        throws MojoFailureException, MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         try
         {
@@ -874,7 +874,7 @@ public class DescribeMojo
      * @see #toLines(String, int, int, int)
      */
     private static void append( StringBuilder sb, String description, int indent )
-        throws MojoFailureException, MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         if ( StringUtils.isEmpty( description ) )
         {
@@ -901,7 +901,7 @@ public class DescribeMojo
      * @see #toLines(String, int, int, int)
      */
     private static void append( StringBuilder sb, String key, String value, int indent )
-        throws MojoFailureException, MojoExecutionException
+        throws MojoExecutionException, MojoFailureException
     {
         if ( StringUtils.isEmpty( key ) )
         {
@@ -934,7 +934,7 @@ public class DescribeMojo
      * @see #toLines(String, int, int, int)
      */
     private static void appendAsParagraph( StringBuilder sb, String key, String value, int indent )
-        throws MojoFailureException, MojoExecutionException
+            throws MojoExecutionException, MojoFailureException
     {
         if ( StringUtils.isEmpty( value ) )
         {
